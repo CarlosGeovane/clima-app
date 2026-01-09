@@ -16,16 +16,17 @@
 
   <div class="container">
     <h1>Clima Agora</h1>
+
     <input type="text" id="cidadeInput" placeholder="Digite o nome da cidade" />
-    <button id="buscarBtn">Buscar</button>
+
+    <div class="search-box">
+      <button id="buscarBtn">Buscar</button>
+      <button id="geoBtn" title="Usar minha localização">
+        <i class="fa-solid fa-location-crosshairs"></i>
+      </button>
+    </div>
 
     <div id="resultado"></div>
-    <div id="resultado">
-      <div id="loader" class="hidden">
-        <i class="fa-solid fa-circle-notch fa-spin"></i>
-        <p>Buscando clima...</p>
-      </div>
-    </div>
 
     <div class="history">
       <h3>Pesquisas recentes</h3>
