@@ -1,3 +1,6 @@
+const historyList = document.getElementById("historyList");
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
 const apiKey = "96f4fed28977e057f1da7296ada1b56c";
 
 const botaoBuscar = document.getElementById("buscarBtn");
@@ -13,6 +16,8 @@ function buscarClima() {
     resultadoDiv.innerHTML = "<p>Digite o nome de uma cidade.</p>";
     return;
   }
+
+  salvarHistorico(cidade);
 
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${cidade}&appid=${apiKey}&units=metric&lang=pt_br`;
 
@@ -45,3 +50,35 @@ function buscarClima() {
       resultadoDiv.innerHTML = "<p>Erro ao buscar clima.</p>";
     });
 }
+
+function salvarHistorico(cidade) {
+  if (history.includes(cidade)) return;
+
+  history.unshift(cidade);
+
+  if (history.length > 5) {
+    history.pop();
+  }
+
+  localStorage.setItem("history", JSON.stringify(history));
+  renderHistorico();
+}
+
+function renderHistorico() {
+  historyList.innerHTML = "";
+
+  history.forEach((cidade) => {
+    const li = document.createElement("li");
+    li.textContent = cidade;
+
+    li.addEventListener("click", () => {
+      inputCidade.value = cidade;
+      buscarClima();
+    });
+
+    historyList.appendChild(li);
+  });
+}
+
+// Carrega histórico ao iniciar
+renderHistorico();
