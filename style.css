@@ -123,3 +123,21 @@ button {
   color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
 }
+
+#loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+#loader i {
+  font-size: 50px;
+  color: #1e90ff;
+}
+
+.hidden {
+  display: none !important;
+}
