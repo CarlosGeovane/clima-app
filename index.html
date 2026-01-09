@@ -4,34 +4,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
   <title>Clima Agora | App de Previsão do Tempo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <!-- VÍDEO DE FUNDO -->
   <video autoplay muted loop id="bg-video">
     <source src="videos/nuvens-fundo.mp4" type="video/mp4" />
   </video>
 
-  <!-- CONTEÚDO -->
   <div class="container">
     <h1>Clima Agora</h1>
-
     <input type="text" id="cidadeInput" placeholder="Digite o nome da cidade" />
-
     <button id="buscarBtn">Buscar</button>
 
     <div id="resultado"></div>
+
     <div class="history">
       <h3>Pesquisas recentes</h3>
       <ul id="historyList"></ul>
     </div>
   </div>
 
-  <script src="script.js"></script>
-
   <footer class="footer">© 2026 — Carlos Geovane · Portfolio Project</footer>
+  <script src="script.js"></script>
 </body>
 
 </html>
