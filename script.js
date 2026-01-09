@@ -3,14 +3,18 @@ const botaoBuscar = document.getElementById("buscarBtn");
 const botaoGeo = document.getElementById("geoBtn");
 const inputCidade = document.getElementById("cidadeInput");
 const resultadoDiv = document.getElementById("resultado");
+const unitCheckbox = document.getElementById("unit-checkbox");
 
 const apiKey = "96f4fed28977e057f1da7296ada1b56c";
 let history = JSON.parse(localStorage.getItem("history")) || [];
+let currentTempCelsius = null; // Guarda a temperatura atual
 
+// Eventos
 botaoBuscar.addEventListener("click", () =>
   buscarClima(inputCidade.value.trim())
 );
 botaoGeo.addEventListener("click", pegarLocalizacao);
+unitCheckbox.addEventListener("change", atualizarDisplayTemperatura);
 
 function pegarLocalizacao() {
   if (navigator.geolocation) {
@@ -20,8 +24,6 @@ function pegarLocalizacao() {
         buscarClimaPorCoordenadas(pos.coords.latitude, pos.coords.longitude),
       () => (resultadoDiv.innerHTML = "<p>Acesso negado.</p>")
     );
-  } else {
-    resultadoDiv.innerHTML = "<p>Sem suporte a localização.</p>";
   }
 }
 
@@ -37,44 +39,80 @@ function buscarClima(cidade) {
 }
 
 function executarFetch(url) {
-  // Injeta o loader apenas quando clica
-  resultadoDiv.innerHTML = `
-    <div id="loader">
-      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 50px; color: #1e90ff; margin-bottom: 10px;"></i>
-      <p>Buscando clima...</p>
-    </div>
-  `;
+  resultadoDiv.innerHTML = `<div id="loader"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 50px; color: #1e90ff;"></i></div>`;
 
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      resultadoDiv.innerHTML = "";
       if (data.cod === "404") {
         resultadoDiv.innerHTML = "<p>Cidade não encontrada.</p>";
         return;
       }
-
-      const { temp } = data.main;
-      const { description, icon, main } = data.weather[0];
-      let faIcon = "fa-sun";
-      if (icon.includes("n")) faIcon = "fa-moon";
-      else if (main === "Clouds") faIcon = "fa-cloud";
-      else if (main === "Rain") faIcon = "fa-cloud-showers-heavy";
-      else if (main === "Thunderstorm") faIcon = "fa-bolt";
-
-      resultadoDiv.innerHTML = `
-        <div class="clima-info">
-          <h2>${data.name}</h2>
-          <i class="fa-solid ${faIcon} clima-icon-fa"></i>
-          <p class="temp-text">${Math.round(temp)}°C</p>
-          <p class="desc-text">${description}</p>
-        </div>
-      `;
+      // Salva os dados globais
+      currentTempCelsius = data.main.temp;
+      renderizarClima(data);
       salvarHistorico(data.name);
     })
     .catch(() => (resultadoDiv.innerHTML = "<p>Erro na conexão.</p>"));
 }
 
+function renderizarClima(data) {
+  const { description, icon, main } = data.weather[0];
+  const displayTemp = converterTemp(currentTempCelsius);
+  const unitLabel = unitCheckbox.checked ? "°F" : "°C";
+
+  let faIcon = "fa-sun";
+  if (icon.includes("n")) faIcon = "fa-moon";
+  else if (main === "Clouds") faIcon = "fa-cloud";
+  else if (main === "Rain") faIcon = "fa-cloud-showers-heavy";
+
+  resultadoDiv.innerHTML = `
+    <div class="clima-info">
+      <h2>${data.name}</h2>
+      <i class="fa-solid ${faIcon} clima-icon-fa"></i>
+      <p class="temp-text">${Math.round(displayTemp)}${unitLabel}</p>
+      <p class="desc-text">${description}</p>
+    </div>
+  `;
+
+  // Atualiza as cores do toggle
+  document
+    .getElementById("unit-c")
+    .classList.toggle("active", !unitCheckbox.checked);
+  document
+    .getElementById("unit-f")
+    .classList.toggle("active", unitCheckbox.checked);
+}
+
+function converterTemp(celsius) {
+  if (unitCheckbox.checked) {
+    return (celsius * 9) / 5 + 32; // Celsius para Fahrenheit
+  }
+  return celsius;
+}
+
+function atualizarDisplayTemperatura() {
+  if (currentTempCelsius !== null) {
+    // Se já tem uma busca feita, apenas re-renderiza com a nova unidade
+    const nomeCidade = resultadoDiv.querySelector("h2").innerText;
+    // Buscamos novamente para atualizar o DOM sem novo fetch
+    const desc = resultadoDiv.querySelector(".desc-text").innerText;
+    const unitLabel = unitCheckbox.checked ? "°F" : "°C";
+    const displayTemp = Math.round(converterTemp(currentTempCelsius));
+
+    resultadoDiv.querySelector(
+      ".temp-text"
+    ).innerText = `${displayTemp}${unitLabel}`;
+    document
+      .getElementById("unit-c")
+      .classList.toggle("active", !unitCheckbox.checked);
+    document
+      .getElementById("unit-f")
+      .classList.toggle("active", unitCheckbox.checked);
+  }
+}
+
+// Histórico e Enter (mantidos iguais)
 function salvarHistorico(cidade) {
   if (!history.includes(cidade)) {
     history.unshift(cidade);

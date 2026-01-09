@@ -204,3 +204,69 @@ button:active {
   align-items: center;
   justify-content: center;
 }
+
+/* UNIDADES TOGGLE */
+.units-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.units-toggle span {
+  opacity: 0.5;
+  transition: 0.3s;
+}
+
+.units-toggle span.active {
+  opacity: 1;
+  color: #00a8ff;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: 0.4s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked+.slider {
+  background-color: #00a8ff;
+}
+
+input:checked+.slider:before {
+  transform: translateX(20px);
+}
