@@ -4,12 +4,29 @@ const botaoGeo = document.getElementById("geoBtn");
 const inputCidade = document.getElementById("cidadeInput");
 const resultadoDiv = document.getElementById("resultado");
 const unitCheckbox = document.getElementById("unit-checkbox");
+const themeToggle = document.getElementById("theme-toggle");
 
 const apiKey = "96f4fed28977e057f1da7296ada1b56c";
 let history = JSON.parse(localStorage.getItem("history")) || [];
-let currentTempCelsius = null; // Guarda a temperatura atual
+let currentTempCelsius = null;
 
-// Eventos
+// TEMA
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
+  themeToggle.innerHTML = isLight
+    ? '<i class="fa-solid fa-sun"></i>'
+    : '<i class="fa-solid fa-moon"></i>';
+  localStorage.setItem("theme", isLight ? "light" : "dark");
+});
+
+// Carregar tema salvo
+if (localStorage.getItem("theme") === "light") {
+  document.body.classList.add("light-mode");
+  themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+}
+
+// EVENTOS DE BUSCA
 botaoBuscar.addEventListener("click", () =>
   buscarClima(inputCidade.value.trim())
 );
@@ -18,7 +35,7 @@ unitCheckbox.addEventListener("change", atualizarDisplayTemperatura);
 
 function pegarLocalizacao() {
   if (navigator.geolocation) {
-    resultadoDiv.innerHTML = "<p>Solicitando acesso...</p>";
+    resultadoDiv.innerHTML = "<p>Localizando...</p>";
     navigator.geolocation.getCurrentPosition(
       (pos) =>
         buscarClimaPorCoordenadas(pos.coords.latitude, pos.coords.longitude),
@@ -40,7 +57,6 @@ function buscarClima(cidade) {
 
 function executarFetch(url) {
   resultadoDiv.innerHTML = `<div id="loader"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 50px; color: #1e90ff;"></i></div>`;
-
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
@@ -48,7 +64,6 @@ function executarFetch(url) {
         resultadoDiv.innerHTML = "<p>Cidade não encontrada.</p>";
         return;
       }
-      // Salva os dados globais
       currentTempCelsius = data.main.temp;
       renderizarClima(data);
       salvarHistorico(data.name);
@@ -58,8 +73,12 @@ function executarFetch(url) {
 
 function renderizarClima(data) {
   const { description, icon, main } = data.weather[0];
-  const displayTemp = converterTemp(currentTempCelsius);
   const unitLabel = unitCheckbox.checked ? "°F" : "°C";
+  const displayTemp = Math.round(
+    unitCheckbox.checked
+      ? (currentTempCelsius * 9) / 5 + 32
+      : currentTempCelsius
+  );
 
   let faIcon = "fa-sun";
   if (icon.includes("n")) faIcon = "fa-moon";
@@ -70,37 +89,21 @@ function renderizarClima(data) {
     <div class="clima-info">
       <h2>${data.name}</h2>
       <i class="fa-solid ${faIcon} clima-icon-fa"></i>
-      <p class="temp-text">${Math.round(displayTemp)}${unitLabel}</p>
+      <p class="temp-text">${displayTemp}${unitLabel}</p>
       <p class="desc-text">${description}</p>
     </div>
   `;
-
-  // Atualiza as cores do toggle
-  document
-    .getElementById("unit-c")
-    .classList.toggle("active", !unitCheckbox.checked);
-  document
-    .getElementById("unit-f")
-    .classList.toggle("active", unitCheckbox.checked);
-}
-
-function converterTemp(celsius) {
-  if (unitCheckbox.checked) {
-    return (celsius * 9) / 5 + 32; // Celsius para Fahrenheit
-  }
-  return celsius;
 }
 
 function atualizarDisplayTemperatura() {
   if (currentTempCelsius !== null) {
-    // Se já tem uma busca feita, apenas re-renderiza com a nova unidade
-    const nomeCidade = resultadoDiv.querySelector("h2").innerText;
-    // Buscamos novamente para atualizar o DOM sem novo fetch
-    const desc = resultadoDiv.querySelector(".desc-text").innerText;
     const unitLabel = unitCheckbox.checked ? "°F" : "°C";
-    const displayTemp = Math.round(converterTemp(currentTempCelsius));
-
-    resultadoDiv.querySelector(
+    const displayTemp = Math.round(
+      unitCheckbox.checked
+        ? (currentTempCelsius * 9) / 5 + 32
+        : currentTempCelsius
+    );
+    document.querySelector(
       ".temp-text"
     ).innerText = `${displayTemp}${unitLabel}`;
     document
@@ -112,7 +115,6 @@ function atualizarDisplayTemperatura() {
   }
 }
 
-// Histórico e Enter (mantidos iguais)
 function salvarHistorico(cidade) {
   if (!history.includes(cidade)) {
     history.unshift(cidade);
